@@ -11,7 +11,7 @@ namespace SelfEsteemBrands.Services
 {
     public interface IGitHubService
     {
-        public IEnumerable<GitHubRepo> GetTopStarredRepos(string language);
+        public Root GetTopStarredRepos(string language);
     }
 
     public class GitHubService : IGitHubService
@@ -24,7 +24,7 @@ namespace SelfEsteemBrands.Services
 
         }
 
-        public IEnumerable<GitHubRepo> GetTopStarredRepos(string language)
+        public Root GetTopStarredRepos(string language)
         {
             Root root = new Root();
             JsonSerializerOptions options = new JsonSerializerOptions
@@ -36,11 +36,32 @@ namespace SelfEsteemBrands.Services
             {
                 GetJSON(language, minStars).Wait();
                 root = JsonSerializer.Deserialize<Root>(JSON, options);
+                // if an invalid language is entered, github just sends everything. watch for it.
+                if (!ValidateRepos(root.Items, language))
+                {
+                    root = new Root("There are no GitHub repositories using that language. Are you sure it was typed correctly?");
+                    break;
+                }
                 // there might be more results with a higher star count, try again
                 minStars = root.Items.Last<GitHubRepo>().stargazers_count;
             }
 
-            return root.Items;
+            return root;
+        }
+
+        private bool ValidateRepos(List<GitHubRepo> gitHubRepos, string language)
+        {
+            bool isValid = true;
+            foreach (GitHubRepo repo in gitHubRepos)
+            {
+                if (repo.language == null || repo.language.ToLower() != language.ToLower())
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            return isValid;
         }
 
         private async Task<bool> GetJSON(string language, int minStars)

@@ -21,9 +21,9 @@ namespace SelfEsteemBrands.Controllers
         }
 
         [HttpGet("{language}")]
-        public List<GitHubRepo> Get(string language)
+        public Root Get(string language)
         {
-            return _gitHubService.GetTopStarredRepos(language).ToList();
+            return _gitHubService.GetTopStarredRepos(language);
         }
     }
 }

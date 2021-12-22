@@ -7,8 +7,13 @@ namespace SelfEsteemBrands.Models
 {
     public class Root
     {
-        public int total_count { get; set; }
-        public bool incomplete_results { get; set; }
-        public List<GitHubRepo> items { get; set; }
+        public int Total_count { get; set; }
+        public bool Incomplete_results { get; set; }
+        public List<GitHubRepo> Items { get; set; }
+
+        public Root()
+        {
+            Incomplete_results = true;
+        }
     }
 }

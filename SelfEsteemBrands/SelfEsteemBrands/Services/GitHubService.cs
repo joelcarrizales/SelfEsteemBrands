@@ -16,7 +16,7 @@ namespace SelfEsteemBrands.Services
 
     public class GitHubService : IGitHubService
     {
-        private const string URL = "https://api.github.com/search/repositories?q=language:javascript stars:>10000 sort:stars-desc&per_page=5";
+        private const string URL = "https://api.github.com/search/repositories?q=language:{0} stars:>={1} sort:stars-desc&per_page=5";
         private string JSON = "";
 
         public GitHubService()
@@ -26,21 +26,28 @@ namespace SelfEsteemBrands.Services
 
         public IEnumerable<GitHubRepo> GetTopStarredRepos(string language)
         {
-            GetJSON("javascript").Wait();
+            Root root = new Root();
             JsonSerializerOptions options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
-            Root root = JsonSerializer.Deserialize<Root>(JSON);
+            int minStars = 0;
+            while (root.Incomplete_results)
+            {
+                GetJSON(language, minStars).Wait();
+                root = JsonSerializer.Deserialize<Root>(JSON, options);
+                // there might be more results with a higher star count, try again
+                minStars = root.Items.Last<GitHubRepo>().stargazers_count;
+            }
 
-            return root.items;
+            return root.Items;
         }
 
-        private async Task<bool> GetJSON(string language)
+        private async Task<bool> GetJSON(string language, int minStars)
         {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", "GitHubService");
-            JSON = await client.GetStringAsync(URL);
+            JSON = await client.GetStringAsync(String.Format(URL, language, minStars));
             return true;
         }
     }

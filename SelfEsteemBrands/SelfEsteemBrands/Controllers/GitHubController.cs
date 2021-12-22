@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SelfEsteemBrands.Models;
+using SelfEsteemBrands.Services;
 
 namespace SelfEsteemBrands.Controllers
 {
@@ -12,8 +13,17 @@ namespace SelfEsteemBrands.Controllers
     [ApiController]
     public class GitHubController : ControllerBase
     {
-        public GitHubController() { }
+        private readonly IGitHubService _gitHubService;
 
+        public GitHubController(IGitHubService gitHubService)
+        {
+            _gitHubService = gitHubService;
+        }
 
+        [HttpGet]
+        public List<GitHubRepo> Get()
+        {
+            return _gitHubService.GetTopStarredRepos("JavaScript").ToList();
+        }
     }
 }

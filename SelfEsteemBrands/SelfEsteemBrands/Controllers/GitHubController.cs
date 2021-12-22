@@ -20,10 +20,10 @@ namespace SelfEsteemBrands.Controllers
             _gitHubService = gitHubService;
         }
 
-        [HttpGet]
-        public List<GitHubRepo> Get()
+        [HttpGet("{language}")]
+        public List<GitHubRepo> Get(string language)
         {
-            return _gitHubService.GetTopStarredRepos("JavaScript").ToList();
+            return _gitHubService.GetTopStarredRepos(language).ToList();
         }
     }
 }
